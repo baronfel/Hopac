@@ -9,9 +9,57 @@ namespace Hopac {
   /// <summary>Represents a lightweight thread of execution.</summary>
   public abstract class Job<T> {
     internal abstract void DoJob(ref Worker wr, Cont<T> aK);
+    public static Job<U> op_GreaterGreaterEquals<U>(Job<T> source, FSharpFunc<T,Job<U>> f) {
+      throw new Exception("bind");
+    }
+    public static Job<U> Return<U>(U item) {
+      return new JobReturn<U>(item);
+    }
+    public static Job<U> Apply<U>(Job<FSharpFunc<T, U>> jF, Job<T> jJ) {
+      throw new Exception("apply");
+    }
+    public static Job<Unit> Iterate(Job<T> job, FSharpFunc<T, Unit> action) {
+      throw new Exception("iterate");
+    }
+    public static Job<U> Map<U>(Job<T> job, FSharpFunc<T, U> mapper) {
+      throw new Exception("map");
+    }
+    public static Job<T> op_LessBarGreater(Job<T> left, Job<T> right) {
+      throw new Exception("append");
+    }
+    public static Job<T> Delay(FSharpFunc<Unit, T> activator) {
+      throw new Exception("delay");
+    }
+    public static Job<T> TryWith(Job<T> job, FSharpFunc<Exception, Job<T>> recover) {
+      throw new Exception("trywith");
+    }
+    public static Job<T> TryFinally(Job<T> job, FSharpFunc<Unit, Unit> compensation) {
+      throw new Exception("tryfinally");
+    }
+    public static Job<U> Using<R,U>(R resource, FSharpFunc<R, Job<U>> body) where R: IDisposable {
+      throw new Exception("using");
+    }
+    public static Job<Tuple<T,U>> Zip<U>(Job<T> j, Job<U> u) {
+      throw new Exception("zip");
+    }
+    public static T Extract(Job<T> j){
+      throw new Exception("extract");
+    }
   }
 
   namespace Core {
+    public class JobReturn<T> : Job<T>
+    {
+      private readonly T _value;
+      public JobReturn(T v)
+      {
+        this._value = v;
+      }
+      internal override void DoJob(ref Worker wr, Cont<T> aK)
+      {
+        aK.DoCont(ref wr, this._value);
+      }
+    }
     ///
     public abstract class JobCont<X, Y> : Job<Y> {
       private Job<X> xJ;
@@ -241,7 +289,7 @@ namespace Hopac {
           this.Value.DoJob(ref wr, xK);
         }
         internal override void DoCont(ref Worker wr, JX xJ) {
-          xJ.DoJob(ref wr, xK);         
+          xJ.DoJob(ref wr, xK);
         }
       }
     }

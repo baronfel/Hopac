@@ -991,15 +991,7 @@ module Job =
     whileDoIgnore cond uJ
 
   let result (x: 'x) =
-    // XXX Does this speed things up?
-    if sizeof<IntPtr> <> 8 || StaticData.isMono then
-      {new Job<'x> () with
-        override self.DoJob (wr, xK) =
-         Cont.Do (xK, &wr, x)}
-    else
-      {new Job<'x> () with
-        override self.DoJob (wr, xK) =
-         xK.DoCont (&wr, x)}
+    Job<'x>.Return(x)
 
   let inline bind (x2yJ: 'x -> #Job<'y>) (xJ: Job<'x>) = xJ >>= x2yJ
 
@@ -1637,7 +1629,7 @@ module internal Timer =
 
 ////////////////////////////////////////////////////////////////////////////////
 
-module Lock = 
+module Lock =
   let inline duringFun (l: Hopac.Lock) (xF: unit -> 'x) =
     LockDuringFun<'x> (l, xF) :> Job<'x>
   let inline duringJob (l: Hopac.Lock) (xJ: Job<'x>) =
